@@ -39,11 +39,14 @@ module.exports.putLike = async (req, res) => {
     { $addToSet: { likes: req.user._id } },
     {new: true})
   .then((card) => {
-      res.status(SUCCESS_CODE).send({ data: card });
+    if (card) {
+      return res.status(SUCCESS_CODE).send({ data: card });
+    }
+    return res.status(ERROR_USER).send({message: 'Передан несуществующий _id карточки'})
   })
   .catch((e) => {
     if(e.kind === 'ObjectId') {
-      return res.status(ERROR_USER).send({message: 'Передан несуществующий _id карточки'})
+      return res.status(ERROR_CODE).send({message: 'Передан несуществующий _id карточки'})
     } else if (err.name === 'SomeErrorName') {
       return res.status(ERROR_CODE).send({message: ' Переданы некорректные данные для постановки/снятии лайка.'})
     }
@@ -51,19 +54,24 @@ module.exports.putLike = async (req, res) => {
   });
 };
 
-module.exports.deleteLike = (req, res) => {
-  Card.findByIdAndUpdate(
+module.exports.deleteLike = async (req, res) => {
+  await Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
     {new: true}
   )
-  .then(card => res.status(SUCCESS_CODE).send({ data: card }))
+  .then((card) => {
+    if (card) {
+      return res.status(SUCCESS_CODE).send({ data: card });
+    }
+    return res.status(ERROR_USER).send({message: 'Передан несуществующий _id карточки'})
+  })
   .catch((e) => {
     if(e.kind === 'ObjectId') {
       res.status(ERROR_USER).send({message: `Карточка с таким id:${req.params.cardId} не найдена`})
     } else if (err.name === 'SomeErrorName') {
       return res.status(ERROR_CODE).send({message: ' Переданы некорректные данные для постановки/снятии лайка.'})
     }
-    res.status(ERROR_SERVER).send({ message: 'Произошла ошибка'})
+    return res.status(ERROR_SERVER).send({ message: 'Произошла ошибка'})
   });
 };

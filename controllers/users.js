@@ -17,7 +17,7 @@ module.exports.getUser = (req, res) => {
       res.status(SUCCESS_CODE).send({ data: user });
       return;
     }
-    return res.status(ERROR_USER).send({message: 'Пользователь не найден'});
+    return res.status(ERROR_CODE).send({message: 'Пользователь не найден'});
   })
   .catch((e) => res.status(ERROR_SERVER).send({ message: 'Произошла ошибка', ...e }));
 };
@@ -59,10 +59,10 @@ module.exports.updateUserInformation = async (req, res) => {
 
 module.exports.updateUserAvatar = async (req, res) => {
   try {
-    if(req.body.link) {
+    if(req.body.avatar) {
       await User.findByIdAndUpdate(
         req.user._id,
-        {avatar: `${req.body.link}`},
+        {avatar: `${req.body.avatar}`},
         {new: true}
       )
       .then(user => res.status(SUCCESS_CODE).send({ data: user }))
@@ -74,6 +74,6 @@ module.exports.updateUserAvatar = async (req, res) => {
       });
     } throw (new Error('Ошибка!'))
   } catch(e) {
-    return res.status(ERROR_CODE).send({message: 'Переданы некорректные для обновления'});
+    return res.status(ERROR_CODE).send({message: 'Переданы некорректные данные при обновлении профиля.'});
   }
 };
