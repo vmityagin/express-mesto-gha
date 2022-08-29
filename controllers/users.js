@@ -12,12 +12,18 @@ module.exports.getAllUsers = (req, res) => {
 
 module.exports.getUser = (req, res) => {
   User.findById(req.params._id)
+  .orFail(() => {
+    const error = new Error('Пользователь не найден');
+    err.name = 'UserNotFoundError';
+    throw error;
+  })
   .then((user) => {
     if (user) {
       res.status(SUCCESS_CODE).send({ data: user });
       return;
+    } else {
+      return res.status(ERROR_CODE).send({message: 'Пользователь не найден'});
     }
-    return res.status(ERROR_CODE).send({message: 'Пользователь не найден'});
   })
   .catch((e) => res.status(ERROR_SERVER).send({ message: 'Произошла ошибка', ...e }));
 };

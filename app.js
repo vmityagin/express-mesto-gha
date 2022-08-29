@@ -2,6 +2,11 @@ const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const ERROR_CODE = 400;
+const ERROR_USER = 404;
+const ERROR_SERVER = 500;
+const SUCCESS_CODE = 200;
+
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -21,6 +26,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 
 app.use('/users', require('./routes/users'));
+
 app.use('/cards', require('./routes/cards'));
 
 
