@@ -20,14 +20,15 @@ module.exports.createCard = (req, res) => {
 
 module.exports.deleteCard = (req, res) => {
   User.findByIdAndRemove(req.params.cardid)
-    .orFail(() => {
-      throw new Error("Not Found");
+    .then((card) => {
+      if (!card) {
+        res.status(ERROR_USER).send({ message: "Ошибка, такого id не существует" });
+      } else {
+        res.send({ data: card });
+      }
     })
-    .then((card) => res.send({ data: card }))
     .catch((e) => {
-      if (e.message === "NotFound") {
-        res.send(ERROR_USER).send({ message: "Пользователь не найден" });
-      } else if (e.name === "CastError") {
+      if (e.name === "CastError") {
         res.status(ERROR_SERVER).send({ message: "Невалидный id " });
       }
       res.status(ERROR_CODE).send({ message: "Произошла ошибка" });
