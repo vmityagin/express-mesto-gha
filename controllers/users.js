@@ -1,5 +1,5 @@
 const User = require("../models/user");
-const { ERROR_CODE, ERROR_SERVER } = require("../constants/constants");
+const { ERROR_CODE, ERROR_SERVER, ERROR_USER } = require("../constants/constants");
 
 module.exports.getAllUsers = (req, res) => {
   User.find({})
@@ -11,7 +11,7 @@ module.exports.getUser = (req, res) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        return res.status(ERROR_CODE).send({ message: "Пользователь не найден" });
+        return res.status(ERROR_USER).send({ message: "Пользователь не найден" });
       } return res.send({ data: user });
     })
     .catch((e) => {
@@ -28,7 +28,7 @@ module.exports.createUser = (req, res) => {
   User.create({ name, about, avatar })
     .then((user) => res.send({ data: user }))
     .catch(() => {
-      res.status(ERROR_SERVER).send({ message: "Произошла ошибка" });
+      res.status(ERROR_CODE).send({ message: "Произошла ошибка" });
     });
 };
 
