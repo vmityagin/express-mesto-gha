@@ -22,7 +22,7 @@ module.exports.deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
       if (!card) {
-        res.status(ERROR_CODE).send({ message: "Ошибка, такого id не существует" });
+        res.status(ERROR_USER).send({ message: "Ошибка, такого id не существует" });
       } else {
         res.send({ data: card });
       }
