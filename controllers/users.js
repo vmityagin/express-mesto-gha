@@ -18,7 +18,7 @@ module.exports.getUser = (req, res) => {
       if (e.name === "CastError") {
         return res.status(ERROR_CODE).send({ message: "Невалидный id" });
       }
-      return res.status(ERROR_SERVER).send({ message: "Произошла ошибка" });
+      return res.status(ERROR_CODE).send({ message: "Произошла ошибка" });
     });
 };
 

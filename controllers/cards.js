@@ -14,7 +14,7 @@ module.exports.createCard = (req, res) => {
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send({ data: card }))
     .catch(() => {
-      res.status(ERROR_SERVER).send({ message: "Произошла ошибка" });
+      res.status(ERROR_CODE).send({ message: "Произошла ошибка" });
     });
 };
 
@@ -44,7 +44,7 @@ module.exports.putLike = async (req, res) => {
       if (card) {
         return res.send({ data: card });
       }
-      return res.status(ERROR_USER).send({ message: "Передан несуществующий _id карточки" });
+      return res.status(ERROR_CODE).send({ message: "Передан несуществующий _id карточки" });
     })
     .catch((e) => {
       if (e.kind === "ObjectId") {
@@ -64,7 +64,7 @@ module.exports.deleteLike = async (req, res) => {
       if (card) {
         return res.send({ data: card });
       }
-      return res.status(ERROR_USER).send({ message: "Передан несуществующий _id карточки" });
+      return res.status(ERROR_CODE).send({ message: "Передан несуществующий _id карточки" });
     })
     .catch((e) => {
       if (e.kind === "ObjectId") {
