@@ -2,10 +2,7 @@ const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const ERROR_CODE = 400;
-const ERROR_USER = 404;
-const ERROR_SERVER = 500;
-const SUCCESS_CODE = 200;
+const {ERROR_USER} = require('./constants/constants');
 
 
 const { PORT = 3000 } = process.env;
@@ -26,24 +23,13 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 
 app.use('/users', require('./routes/users'));
-
 app.use('/cards', require('./routes/cards'));
-
-
-app.use(express.static(path.join(__dirname, 'public')));
 
 app.listen(PORT, () => {
   console.log('Ссылка на сервер');
   console.log(`localhost:${PORT}`);
 });
 
-app.get('/', (req, res) => {
-    res.status(200).send(`
-    <html>
-    <body>
-        <p>Ответ на сигнал из далёкого космоса</p>
-    </body>
-    </html>
-    `)
-
-})
+app.use((req, res) => {
+  res.status(ERROR_USER).send({ message: 'Такого запроса не существует' });
+  });

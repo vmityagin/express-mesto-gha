@@ -1,8 +1,5 @@
 const Card = require('../models/card');
-const ERROR_CODE = 400;
-const ERROR_USER = 404;
-const ERROR_SERVER = 500;
-const SUCCESS_CODE = 200;
+const {ERROR_CODE, ERROR_USER, ERROR_SERVER} = require('../constants/constants');
 
 module.exports.getAllCards = (req, res) => {
     Card.find({})
@@ -16,21 +13,25 @@ module.exports.createCard = (req, res) => {
   Card.create({name, link, owner: req.user._id})
   .then(card => res.status(SUCCESS_CODE).send({ data: card }))
   .catch((e) => {
-    if(e.name === "ValidationError" || e.link === "ValidationError") {
-      res.status(ERROR_CODE).send({message: `Переданы некорректные данные в методы создания карточки`});
-      return;
-    }
     res.status(ERROR_SERVER).send({ message: 'Произошла ошибка', ...e  })
   });
 };
 
 module.exports.deleteCard = (req, res) => {
-  if(req.params.id) {
-    User.findByIdAndRemove(req.params.id)
-    .then(card => res.status(SUCCESS_CODE).send({ data: card }))
-    .catch((e) => res.status(ERROR_SERVER).send({ message: 'Произошла ошибка', ...e  }));
-  }
-  return res.status(ERROR_USER).send({ message: 'Карточка с указанным _id не найдена.'});
+  User.findByIdAndRemove(req.params.cardid)
+  .orFail(() => {
+    throw new Error('Not Found');
+  })
+  .then(card => res.status(SUCCESS_CODE).send({ data: card }))
+  .catch((e) => {
+    if(e.message === 'NotFound') {
+      res.send(ERROR_USER).send({message: 'Пользователь не найден'})
+    } else if (e.name === 'CastError') {
+      res.status(ERROR_SERVER).send({ message: 'Невалидный id ' });
+    }
+    res.status(ERROR_SERVER).send({ message: 'Произошла ошибка' })
+    }
+  );
 };
 
 module.exports.putLike = async (req, res) => {
@@ -47,8 +48,6 @@ module.exports.putLike = async (req, res) => {
   .catch((e) => {
     if(e.kind === 'ObjectId') {
       return res.status(ERROR_CODE).send({message: 'Передан несуществующий _id карточки'})
-    } else if (err.name === 'SomeErrorName') {
-      return res.status(ERROR_CODE).send({message: ' Переданы некорректные данные для постановки/снятии лайка.'})
     }
     return res.status(ERROR_SERVER).send({ message: 'Произошла ошибка'});
   });
@@ -69,8 +68,6 @@ module.exports.deleteLike = async (req, res) => {
   .catch((e) => {
     if(e.kind === 'ObjectId') {
       res.status(ERROR_USER).send({message: `Карточка с таким id:${req.params.cardId} не найдена`})
-    } else if (err.name === 'SomeErrorName') {
-      return res.status(ERROR_CODE).send({message: ' Переданы некорректные данные для постановки/снятии лайка.'})
     }
     return res.status(ERROR_SERVER).send({ message: 'Произошла ошибка'})
   });

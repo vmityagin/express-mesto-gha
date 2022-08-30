@@ -1,85 +1,78 @@
 const User = require('../models/user');
-const ERROR_CODE = 400;
-const ERROR_USER = 404;
-const ERROR_SERVER = 500;
-const SUCCESS_CODE = 200;
+const {ERROR_CODE, ERROR_USER, ERROR_SERVER} = require('../constants/constants');
 
 module.exports.getAllUsers = (req, res) => {
     User.find({})
-    .then(user => res.status(SUCCESS_CODE).send({ data: user }))
-    .catch((e) => res.status(ERROR_SERVER).send({ message: 'Произошла ошибка', ...e }));
+    .then(user => res.send({ data: user }))
+    .catch(() => res.status(ERROR_SERVER).send({ message: 'Произошла ошибка' }));
 };
 
 module.exports.getUser = (req, res) => {
-  User.findById(req.params._id)
-  .orFail(() => {
-    const error = new Error('Пользователь не найден');
-    err.name = 'UserNotFoundError';
-    throw error;
-  })
+  User.findById(req.params.userId)
   .then((user) => {
-    if (user) {
-      res.status(SUCCESS_CODE).send({ data: user });
-      return;
-    } else {
+    if (!user) {
       return res.status(ERROR_CODE).send({message: 'Пользователь не найден'});
+    } else {
+      res.send({ data: user });
+      return;
     }
   })
-  .catch((e) => res.status(ERROR_SERVER).send({ message: 'Произошла ошибка', ...e }));
+  .catch((e) => {
+    if (e.name === 'CastError') {
+      return res.status(ERROR_CODE).send({ message: 'Невалидный id ' });
+    }
+    return res.status(ERROR_SERVER).send({ message: 'Произошла ошибка' });
+  })
 };
 
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
 
   User.create({ name, about, avatar })
-  .then(user => res.status(SUCCESS_CODE).send({ data: user }))
+  .then(user => res.send({ data: user }))
   .catch((e) => {
-    if(e.name === "ValidationError" || e.link === "ValidationError") {
-      res.status(ERROR_CODE).send({message: `Переданы некорректные данные в метод создания пользователя`});
-      return;
-    }
-    res.status(ERROR_SERVER).send({ message: 'Произошла ошибка', ...e  })
+    res.status(ERROR_SERVER).send({ message: 'Произошла ошибка' })
   });
 };
 
 module.exports.updateUserInformation = async (req, res) => {
-  try {
-    if(req.body.name && req.body.about) {
-       await User.findByIdAndUpdate(
-        req.user._id,
-        {name: `${req.body.name}`, about: `${req.body.about}`},
-        {new: true}
-      )
-      .then(user => res.status(SUCCESS_CODE).send({ data: user }))
-      .catch((e) => {
-        if (e.kind === 'ObjectId') {
-          return res.status(ERROR_USER).send({ message: 'Пользователь с таким id не найден' });
-        }
-        return res.status(ERROR_SERVER).send({ message: 'Произошла ошибка', ...e  });
-      });
-    } throw (new Error('Ошибка!'))
-  } catch(e) {
-    return res.status(ERROR_CODE).send({ message: 'Переданы некорректные данные при обновлении профиля.', ...e  });
+  const {name, about} = req.body;
+
+  if (!name && !about) {
+    return res.status(ERROR_CODE).send({message: 'Переданы некорректные данные при обновлении профиля'});
   }
-};
+  return User.findByIdAndUpdate(
+    req.user._id,
+    {name: `${name}`, about: `${about}`},
+    {new: true, runValidators: true}
+  )
+  .then((user) => { res.status(SUCCESS_CODE).send({data: user})})
+  .catch((e) => {
+    if (e.name === 'ValidationError') {
+      res.status(ERROR_CODE).send({message: 'Переданы некорректные данные при обновлении профиля'});
+    } else {
+      res.status(ERROR_SERVER).send({message: 'Произошла ошибка'});
+    }
+  });
+}
 
 module.exports.updateUserAvatar = async (req, res) => {
-  try {
-    if(req.body.avatar) {
-      await User.findByIdAndUpdate(
-        req.user._id,
-        {avatar: `${req.body.avatar}`},
-        {new: true}
-      )
-      .then(user => res.status(SUCCESS_CODE).send({ data: user }))
-      .catch((e) => {
-        if (e.kind === 'ObjectId') {
-          return res.status(ERROR_USER).send({ message: 'Пользователь с таким id не найден' });
-        }
-        return res.status(ERROR_SERVER).send({ message: 'Произошла ошибка', ...e  });
-      });
-    } throw (new Error('Ошибка!'))
-  } catch(e) {
-    return res.status(ERROR_CODE).send({message: 'Переданы некорректные данные при обновлении профиля.'});
+  const {avatar} = req.body;
+
+  if (!avatar) {
+    return res.status(ERROR_CODE).send({message: 'Переданы некорректные данные при обновлении профиля'});
   }
-};
+  return User.findByIdAndUpdate(
+    req.user._id,
+    {avatar: `${avatar}`},
+    {new: true, runValidators: true}
+  )
+  .then((user) => { res.status(SUCCESS_CODE).send({data: user})})
+  .catch((e) => {
+    if (e.name === 'ValidationError') {
+      res.status(ERROR_CODE).send({message: 'Переданы некорректные данные при обновлении профиля'});
+    } else {
+      res.status(ERROR_SERVER).send({message: 'Произошла ошибка'});
+    }
+  });
+}
