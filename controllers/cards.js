@@ -1,5 +1,4 @@
 const Card = require("../models/card");
-const User = require("../models/user");
 const { ERROR_CODE, ERROR_USER, ERROR_SERVER } = require("../constants/constants");
 
 module.exports.getAllCards = (req, res) => {
@@ -19,10 +18,11 @@ module.exports.createCard = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
-  User.findByIdAndRemove(req.params.cardid)
+  console.log(req.params.cardId);
+  Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
       if (!card) {
-        res.status(ERROR_USER).send({ message: "Ошибка, такого id не существует" });
+        res.status(ERROR_CODE).send({ message: "Ошибка, такого id не существует" });
       } else {
         res.send({ data: card });
       }
