@@ -14,7 +14,7 @@ module.exports.createCard = (req, res) => {
     .then((card) => res.send({ data: card }))
     .catch((e) => {
       if (e.name === "ValidationError") {
-        res.status(ERROR_CODE).send({message: "Некорректные данные"})
+        res.status(ERROR_CODE).send({ message: "Некорректные данные" });
       } else {
         res.status(ERROR_SERVER).send({ message: "Произошла ошибка" });
       }
