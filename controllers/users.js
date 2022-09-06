@@ -1,5 +1,35 @@
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-const { ERROR_CODE, ERROR_SERVER, ERROR_USER } = require("../constants/constants");
+
+const {
+  ERROR_CODE,
+  ERROR_SERVER,
+  ERROR_USER,
+  ERROR_VALID,
+} = require("../constants/constants");
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+  User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign(
+        { _id: user._id },
+        "14-pr-yandex-praktikum-cohort-43",
+        { expiresIn: "7d" },
+      );
+      res.cookie("jwt", token, {
+        maxAge: 3600000 * 24 * 7,
+        httpOnly: true,
+      });
+      res.send({ token });
+    })
+    .catch((e) => {
+      res
+        .status(ERROR_VALID)
+        .send({ message: e.message });
+    });
+};
 
 module.exports.getAllUsers = (req, res) => {
   User.find({})
@@ -23,16 +53,31 @@ module.exports.getUser = (req, res) => {
 };
 
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
 
-  User.create({ name, about, avatar })
-    .then((user) => res.send({ data: user }))
-    .catch((e) => {
-      if (e.name === "ValidationError") {
-        res.status(ERROR_CODE).send({ message: "Некорректные данные" });
-      } else {
-        res.status(ERROR_SERVER).send({ message: "Произошла ошибка" });
-      }
+  bcrypt.hash(password, 10)
+    .then((hash) => {
+      User.create({
+        name,
+        about,
+        avatar,
+        email,
+        password: hash,
+      })
+        .then((user) => res.send({ data: user }))
+        .catch((e) => {
+          if (e.name === "ValidationError") {
+            res.status(ERROR_CODE).send({ message: "Некорректные данные" });
+          } else {
+            res.status(ERROR_SERVER).send({ message: "Произошла ошибка" });
+          }
+        });
     });
 };
 
