@@ -14,14 +14,10 @@ module.exports.login = (req, res) => {
   User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign(
-        { _id: user._id },
-        "14-pr-yandex-praktikum-cohort-43",
+        { _id: user._id.toString() },
+        "some-secret-key",
         { expiresIn: "7d" },
       );
-      res.cookie("jwt", token, {
-        maxAge: 3600000 * 24 * 7,
-        httpOnly: true,
-      });
       res.send({ token });
     })
     .catch((e) => {
@@ -99,6 +95,15 @@ module.exports.updateUserInformation = async (req, res) => {
       } else {
         res.status(ERROR_SERVER).send({ message: "Произошла ошибка" });
       }
+    });
+};
+
+module.exports.infoAboutUser = (req, res) => {
+  User.findById(req.user._id)
+    .then((user) => {
+      if (!user) {
+        return res.status(ERROR_USER).send({ message: "Пользователь не найден" });
+      } return res.send({ data: user });
     });
 };
 
