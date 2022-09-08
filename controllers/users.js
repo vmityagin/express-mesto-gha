@@ -19,7 +19,7 @@ module.exports.login = (req, res, next) => {
       res.send({ token });
     })
     .catch(() => {
-      throw new NotValidData("Передан неверный логин или пароль");
+      throw new NotCorrectData("Передан неверный логин или пароль");
     })
     .catch(next);
 };
