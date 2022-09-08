@@ -1,46 +1,53 @@
 const Card = require("../models/card");
-const { ERROR_CODE, ERROR_USER, ERROR_SERVER } = require("../constants/constants");
+const NotCorrectData = require("../errors/not-correct-data");
+const NotFoundData = require("../errors/not-found-data");
+const NotValidData = require("../errors/not-valid-data");
+const ServerError = require("../errors/server-error");
+const NotCredentialsData = require("../errors/not-credentials-data");
 
-module.exports.getAllCards = (req, res) => {
+module.exports.getAllCards = (req, res, next) => {
   Card.find({})
     .then((card) => res.send({ data: card }))
-    .catch(() => res.status(ERROR_SERVER).send({ message: "Произошла ошибка" }));
+    .catch(() => { throw new ServerError("Произошла ошибка"); })
+    .catch(next);
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send({ data: card }))
     .catch((e) => {
       if (e.name === "ValidationError") {
-        res.status(ERROR_CODE).send({ message: "Некорректные данные" });
+        throw new NotCorrectData("Некорректные данные");
       } else {
-        res.status(ERROR_SERVER).send({ message: "Произошла ошибка" });
+        throw new ServerError("Произошла ошибка");
       }
-    });
+    })
+    .catch(next);
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
       if (!card) {
-        res.status(ERROR_USER).send({ message: "Ошибка, такого id не существует" });
+        throw new NotFoundData("Ошибка, такого id не существует");
       } else if (card.owner !== req.user._id) {
-        res.status(ERROR_USER).send({ message: "Вы не можете удалить чужую карточку" });
+        throw new NotCredentialsData("Вы не можете удалить чужую карточку");
       } else {
         res.send({ data: card });
       }
     })
     .catch((e) => {
       if (e.name === "CastError") {
-        res.status(ERROR_CODE).send({ message: "Невалидный id " });
+        throw new NotValidData("Невалидный id ");
       }
-      res.status(ERROR_CODE).send({ message: "Произошла ошибка" });
-    });
+      throw new ServerError("Произошла ошибка");
+    })
+    .catch(next);
 };
 
-module.exports.putLike = async (req, res) => {
+module.exports.putLike = async (req, res, next) => {
   await Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
@@ -50,17 +57,18 @@ module.exports.putLike = async (req, res) => {
       if (card) {
         return res.send({ data: card });
       }
-      return res.status(ERROR_USER).send({ message: "Передан несуществующий _id карточки" });
+      throw new NotFoundData("Передан несуществующий _id карточки");
     })
     .catch((e) => {
       if (e.kind === "ObjectId") {
-        return res.status(ERROR_CODE).send({ message: "Передан несуществующий _id карточки" });
+        throw new NotFoundData("Передан несуществующий _id карточки");
       }
-      return res.status(ERROR_SERVER).send({ message: "Произошла ошибка" });
-    });
+      throw new ServerError("Произошла ошибка");
+    })
+    .catch(next);
 };
 
-module.exports.deleteLike = async (req, res) => {
+module.exports.deleteLike = async (req, res, next) => {
   await Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
@@ -70,12 +78,13 @@ module.exports.deleteLike = async (req, res) => {
       if (card) {
         return res.send({ data: card });
       }
-      return res.status(ERROR_USER).send({ message: "Передан несуществующий _id карточки" });
+      throw new NotFoundData("Передан несуществующий _id карточки");
     })
     .catch((e) => {
       if (e.kind === "ObjectId") {
-        res.status(ERROR_CODE).send({ message: `Карточка с таким id:${req.params.cardId} не найдена` });
+        throw new NotCorrectData(`Карточка с таким id:${req.params.cardId} не найдена`);
       }
-      return res.status(ERROR_SERVER).send({ message: "Произошла ошибка" });
-    });
+      throw new ServerError("Произошла ошибка");
+    })
+    .catch(next);
 };

@@ -32,6 +32,16 @@ const UserSchema = new mongoose.Schema({
   },
 });
 
+const validateLink = function (value) {
+  return /^(https?:\/\/)?([\w-]{1,32}\.[\w-]{1,32})[^\s@]*$/gm.test(value);
+};
+
+UserSchema.path("avatar").validate(
+  validateLink,
+  "Avatar `{VALUE}` not valid",
+  "Invalid avatar",
+);
+
 UserSchema.statics.findUserByCredentials = function (email, password) {
   return this.findOne({ email }).select("+password")
     .then((user) => {

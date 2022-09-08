@@ -2,10 +2,12 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const { errors } = require("celebrate");
 const {
   login,
   createUser,
 } = require("./controllers/users");
+
 const { auth } = require("./middlewares/auth");
 
 const { ERROR_USER } = require("./constants/constants");
@@ -29,6 +31,22 @@ app.use("/cards", auth, require("./routes/cards"));
 
 app.use((req, res) => {
   res.status(ERROR_USER).send({ message: "Такого запроса не существует" });
+});
+
+app.use(errors());
+
+app.use((err, req, res, next) => {
+  const { statusCode = 500, message } = err;
+
+  res
+    .status(statusCode)
+    .send({
+      message: statusCode === 500
+        ? "На сервере произошла ошибка"
+        : message,
+    });
+
+  next();
 });
 
 app.listen(PORT, () => {
