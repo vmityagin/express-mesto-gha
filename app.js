@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const { celebrate, Joi } = require("celebrate");
 const { errors } = require("celebrate");
 const {
   login,
@@ -23,7 +24,14 @@ mongoose.connect("mongodb://localhost:27017/mestodb", {
   useNewUrlParser: true, useUnifiedTopology: true,
 });
 
-app.post("/signin", login);
+app.post("/signin", celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30),
+    about: Joi.string().required().min(2).max(30),
+    avatar: Joi.string().required().pattern(/^(https?:\/\/)?([\w-]{1,32}\.[\w-]{1,32})[^\s@]*$/),
+    email: Joi.string().required().email({ minDomainSegments: 3, tlds: { allow: ["com", "net", "ru"] } }),
+  }),
+}), login);
 app.post("/signup", createUser);
 
 app.use("/users", auth, require("./routes/users"));
