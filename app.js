@@ -24,14 +24,20 @@ mongoose.connect("mongodb://localhost:27017/mestodb", {
   useNewUrlParser: true, useUnifiedTopology: true,
 });
 
-app.post("/signin", login);
+app.post("/signin", celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email({ minDomainSegments: 3, tlds: { allow: ["com", "net", "ru"] } }),
+    password: Joi.string().required(),
+  }),
+}), login);
+
 app.post("/signup", celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
     avatar: Joi.string().pattern(/^(https?:\/\/)?([\w-]{1,32}\.[\w-]{1,32})[^\s@]*$/),
     email: Joi.string().required().email({ minDomainSegments: 3, tlds: { allow: ["com", "net", "ru"] } }),
-    password: Joi.string(),
+    password: Joi.string().required(),
   }),
 }), createUser);
 
