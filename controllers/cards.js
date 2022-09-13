@@ -28,7 +28,8 @@ module.exports.createCard = (req, res, next) => {
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  const { id } = req.params.cardId;
+  Card.findByIdAndRemove(id)
     .then((card) => {
       if (!card) {
         throw new NotFoundData("Ошибка, такого id не существует");
@@ -54,13 +55,13 @@ module.exports.putLike = async (req, res, next) => {
     { new: true },
   )
     .then((card) => {
-      if (card) {
-        return res.send({ data: card });
+      if (!card) {
+        throw new NotFoundData("Передан несуществующий _id карточки");
       }
-      throw new NotFoundData("Передан несуществующий _id карточки");
+      return res.send({ data: card });
     })
     .catch((e) => {
-      if (e.kind === "ObjectId") {
+      if (!e.kind) {
         throw new NotFoundData("Передан несуществующий _id карточки");
       }
       throw new ServerError("Произошла ошибка");
@@ -81,7 +82,7 @@ module.exports.deleteLike = async (req, res, next) => {
       throw new NotFoundData("Передан несуществующий _id карточки");
     })
     .catch((e) => {
-      if (e.kind === "ObjectId") {
+      if (!e.kind) {
         throw new NotCorrectData(`Карточка с таким id:${req.params.cardId} не найдена`);
       }
       throw new ServerError("Произошла ошибка");

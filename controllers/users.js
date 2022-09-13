@@ -39,7 +39,6 @@ module.exports.getUser = (req, res, next) => {
       } return res.send({ data: user });
     })
     .catch((e) => {
-      console.log(e.name);
       if (e.name === "Error") {
         throw new NotFoundData("Невалидный id");
       }
