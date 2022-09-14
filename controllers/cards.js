@@ -1,15 +1,15 @@
-const Card = require("../models/card");
-const NotCorrectData = require("../errors/not-correct-data");
-const NotFoundData = require("../errors/not-found-data");
-const NotValidData = require("../errors/not-valid-data");
-const ServerError = require("../errors/server-error");
-const NotCredentialsData = require("../errors/not-credentials-data");
+const Card = require('../models/card');
+const NotCorrectData = require('../errors/not-correct-data');
+const NotFoundData = require('../errors/not-found-data');
+const ServerError = require('../errors/server-error');
+const NotCredentialsData = require('../errors/not-credentials-data');
 
 module.exports.getAllCards = (req, res, next) => {
   Card.find({})
     .then((card) => res.send({ data: card }))
-    .catch(() => { throw new ServerError("Произошла ошибка"); })
-    .catch(next);
+    .catch(() => {
+      next(new ServerError('Произошла ошибка'));
+    });
 };
 
 module.exports.createCard = (req, res, next) => {
@@ -18,32 +18,26 @@ module.exports.createCard = (req, res, next) => {
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send({ data: card }))
     .catch((e) => {
-      if (e.name === "ValidationError") {
-        throw new NotCorrectData("Некорректные данные");
+      if (e.name === 'ValidationError') {
+        next(new NotCorrectData('Некорректные данные'));
       } else {
-        throw new ServerError("Произошла ошибка");
+        next(new ServerError('Произошла ошибка'));
       }
-    })
-    .catch(next);
+    });
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  const { id } = req.params.cardId;
-  Card.findByIdAndRemove(id)
+  const { cardId } = req.params;
+  Card.findById(cardId)
+    .orFail(() => new NotFoundData('Ошибка, такого id не существует'))
     .then((card) => {
-      if (!card) {
-        throw new NotFoundData("Ошибка, такого id не существует");
-      } else if (card.owner !== req.user._id) {
-        throw new NotCredentialsData("Вы не можете удалить чужую карточку");
-      } else {
-        res.send({ data: card });
+      if (card.owner.equals(req.user._id)) {
+        throw new NotCredentialsData('Вы не можете удалить чужую карточку');
       }
-    })
-    .catch((e) => {
-      if (e.name === "CastError") {
-        throw new NotValidData("Невалидный id ");
-      }
-      throw new ServerError("Произошла ошибка");
+      return Card.remove()
+        .then(() => {
+          res.send({ message: 'Карточка удалена' });
+        });
     })
     .catch(next);
 };
@@ -56,17 +50,13 @@ module.exports.putLike = async (req, res, next) => {
   )
     .then((card) => {
       if (!card) {
-        throw new NotFoundData("Передан несуществующий _id карточки");
+        throw new NotFoundData('Передан несуществующий _id карточки');
       }
       return res.send({ data: card });
     })
     .catch((e) => {
-      if (!e.kind) {
-        throw new NotFoundData("Передан несуществующий _id карточки");
-      }
-      throw new ServerError("Произошла ошибка");
-    })
-    .catch(next);
+      next(e);
+    });
 };
 
 module.exports.deleteLike = async (req, res, next) => {
@@ -79,13 +69,9 @@ module.exports.deleteLike = async (req, res, next) => {
       if (card) {
         return res.send({ data: card });
       }
-      throw new NotFoundData("Передан несуществующий _id карточки");
+      throw new NotFoundData('Передан несуществующий _id карточки');
     })
     .catch((e) => {
-      if (!e.kind) {
-        throw new NotCorrectData(`Карточка с таким id:${req.params.cardId} не найдена`);
-      }
-      throw new ServerError("Произошла ошибка");
-    })
-    .catch(next);
+      next(e);
+    });
 };

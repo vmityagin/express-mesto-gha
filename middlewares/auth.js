@@ -1,23 +1,18 @@
-const jwt = require("jsonwebtoken");
-const { ERROR_VALID } = require("../constants/constants");
+const jwt = require('jsonwebtoken');
+const NotValidData = require('../errors/not-valid-data');
 
 module.exports.auth = (req, res, next) => {
   const { authorization } = req.headers;
 
-  if (!authorization || !authorization.startsWith("Bearer")) {
-    console.log("Hello");
-    return res
-      .status(ERROR_VALID)
-      .send({ message: "Необходима авторизация" });
+  if (!authorization || !authorization.startsWith('Bearer')) {
+    throw new NotValidData('Необходима авторизация');
   }
-  const token = authorization.replace("Bearer ", "");
+  const token = authorization.replace('Bearer ', '');
   let payload;
   try {
-    payload = jwt.verify(token, "some-secret-key");
+    payload = jwt.verify(token, 'some-secret-key');
   } catch (e) {
-    return res
-      .status(ERROR_VALID)
-      .send({ message: "Необходима авторизация" });
+    throw new NotValidData('Необходима авторизация');
   }
   req.user = payload;
   return next();
