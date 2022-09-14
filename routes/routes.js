@@ -31,9 +31,7 @@ router.use('/users', auth, userRouter);
 router.use('/cards', auth, cardRouter);
 
 router.use(auth, (req, res, next) => {
-  res.send(() => {
-    next(new NotFoundData('Такого запроса не существует'));
-  });
+  res.send(() => next(new NotFoundData('Такого запроса не существует')));
 });
 
 module.exports = router;
