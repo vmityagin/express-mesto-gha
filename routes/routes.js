@@ -12,7 +12,7 @@ const NotFoundData = require('../errors/not-found-data');
 
 router.post('/signin', celebrate({
   body: Joi.object().keys({
-    email: Joi.string().required().email({ minDomainSegments: 1, tlds: { allow: ['com', 'net', 'ru'] } }),
+    email: Joi.string().required().email({ minDomainSegments: 1 }),
     password: Joi.string().required(),
   }),
 }), login);
@@ -22,7 +22,7 @@ router.post('/signup', celebrate({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
     avatar: Joi.string().pattern(regularLinkRegExp),
-    email: Joi.string().required().email({ minDomainSegments: 1, tlds: { allow: ['com', 'net', 'ru'] } }),
+    email: Joi.string().required().email({ minDomainSegments: 1 }),
     password: Joi.string().required(),
   }),
 }), createUser);
@@ -31,7 +31,7 @@ router.use('/users', auth, userRouter);
 router.use('/cards', auth, cardRouter);
 
 router.use(auth, (req, res, next) => {
-  res.send(() => next(new NotFoundData('Такого запроса не существует')));
+  next(new NotFoundData('Такого запроса не существует'));
 });
 
 module.exports = router;

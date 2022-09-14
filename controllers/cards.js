@@ -34,7 +34,7 @@ module.exports.deleteCard = (req, res, next) => {
       if (!card.owner.equals(req.user._id)) {
         return next(new NotCredentialsData('Вы не можете удалить чужую карточку'));
       }
-      return Card.remove()
+      return card.remove()
         .then(() => {
           res.send({ message: 'Карточка удалена' });
         });
