@@ -31,8 +31,8 @@ module.exports.deleteCard = (req, res, next) => {
   Card.findById(cardId)
     .orFail(() => new NotFoundData('Ошибка, такого id не существует'))
     .then((card) => {
-      if (card.owner.equals(req.user._id)) {
-        throw new NotCredentialsData('Вы не можете удалить чужую карточку');
+      if (!card.owner.equals(req.user._id)) {
+        return next(new NotCredentialsData('Вы не можете удалить чужую карточку'));
       }
       return Card.remove()
         .then(() => {

@@ -30,9 +30,9 @@ router.post('/signup', celebrate({
 router.use('/users', auth, userRouter);
 router.use('/cards', auth, cardRouter);
 
-router.use(auth, (req, res) => {
+router.use(auth, (req, res, next) => {
   res.send(() => {
-    throw new NotFoundData('Такого запроса не существует');
+    next(new NotFoundData('Такого запроса не существует'));
   });
 });
 
