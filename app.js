@@ -8,7 +8,7 @@ const routes = require('./routes/routes');
 const { errorsCheck } = require('./middlewares/errors');
 const { errorLogger, requestLogger } = require('./middlewares/logger');
 
-const whitelist = ['https://mesto.vmityagin.nomoredomains.sbs', 'http://mesto.vmityagin.nomoredomains.sbs', 'localhost:3000'];
+const whitelist = ['https://mesto.vmityagin.nomoredomains.sbs/', 'http://mesto.vmityagin.nomoredomains.sbs/', 'http://localhost:3000/'];
 const corsOptionsDelegate = (req, callback) => {
   let corsOptions = {};
   if (whitelist.indexOf(req.header('Origin')) !== -1) {
