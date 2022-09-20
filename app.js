@@ -9,14 +9,14 @@ const { errorsCheck } = require('./middlewares/errors');
 const { errorLogger, requestLogger } = require('./middlewares/logger');
 
 const whitelist = ['https://mesto.vmityagin.nomoredomains.sbs', 'http://mesto.vmityagin.nomoredomains.sbs', 'localhost:3000'];
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+const corsOptionsDelegate = (req, callback) => {
+  let corsOptions = {};
+  if (whitelist.indexOf(req.header('Origin')) !== -1) {
+    corsOptions = { origin: true }; // reflect (enable) the requested origin in the CORS response
+  } else {
+    corsOptions = { origin: false }; // disable CORS for this request
+  }
+  callback(null, corsOptions); // callback expects two parameters: error and options
 };
 
 const app = express();
@@ -30,7 +30,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 });
 
 app.use(requestLogger);
-app.use(routes, cors(corsOptions));
+app.use(routes, cors(corsOptionsDelegate));
 app.use(errorLogger);
 
 app.use(errors());
