@@ -1,14 +1,12 @@
-const app = require('../app');
-
 const allowedCors = [
   'https://mesto.vmityagin.nomoredomains.sbs',
   'http://mesto.vmityagin.nomoredomains.sbs',
-  'localhost:3000',
+  'http://localhost:3000',
 ];
 
-app.use((req, res, next) => {
+module.exports.cors = (req, res, next) => {
   const { method } = req;
-  const DEFAULT_ALLOWED_METHODS = "GET,HEAD,PUT,PATCH,POST,DELETE";
+  const DEFAULT_ALLOWED_METHODS = 'GET,HEAD,PUT,PATCH,POST,DELETE';
   const { origin } = req.headers;
   const requestHeaders = req.headers['access-control-request-headers'];
 
@@ -23,4 +21,4 @@ app.use((req, res, next) => {
   }
 
   next();
-});
+};
