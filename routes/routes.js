@@ -1,6 +1,5 @@
 const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
-const cors = require('../middlewares/cors');
 const { auth } = require('../middlewares/auth');
 const userRouter = require('./users');
 const cardRouter = require('./cards');
@@ -11,14 +10,14 @@ const {
 const { regularLinkRegExp } = require('../constants/constants');
 const NotFoundData = require('../errors/not-found-data');
 
-router.post('/signin', cors, celebrate({
+router.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email({ minDomainSegments: 1 }),
     password: Joi.string().required(),
   }),
 }), login);
 
-router.post('/signup', cors, celebrate({
+router.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
@@ -28,10 +27,10 @@ router.post('/signup', cors, celebrate({
   }),
 }), createUser);
 
-router.use('/users', cors, auth, userRouter);
-router.use('/cards', cors, auth, cardRouter);
+router.use('/users', auth, userRouter);
+router.use('/cards', auth, cardRouter);
 
-router.use(cors, auth, (req, res, next) => {
+router.use(auth, (req, res, next) => {
   next(new NotFoundData('Такого запроса не существует'));
 });
 

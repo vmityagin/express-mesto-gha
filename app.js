@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
@@ -17,6 +18,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true, useUnifiedTopology: true,
 });
 
+app.use(cors());
 app.use(requestLogger);
 app.use(routes);
 app.use(errorLogger);
