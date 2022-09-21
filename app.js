@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
@@ -9,6 +10,11 @@ const { errorLogger, requestLogger } = require('./middlewares/logger');
 
 const app = express();
 
+const corsOptions = {
+  origin: 'http://localhost:3000',
+};
+
+app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
