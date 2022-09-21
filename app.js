@@ -10,6 +10,7 @@ const { errorLogger, requestLogger } = require('./middlewares/logger');
 
 const app = express();
 
+app.use(cors());
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -18,7 +19,6 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true, useUnifiedTopology: true,
 });
 
-app.use(cors());
 app.use(requestLogger);
 app.use(routes);
 app.use(errorLogger);
