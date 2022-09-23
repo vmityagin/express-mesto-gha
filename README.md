@@ -1,3 +1,9 @@
+IP 51.250.69.107
+Frontend https://mesto.vmityagin.nomoredomains.sbs
+Backend https://api.mesto.vmityagin.nomoredomains.sbs
+
+Repositories https://github.com/yandex-praktikum/react-mesto-api-full 
+
 [![Tests](https://github.com/vmityagin/express-mesto-gha/actions/workflows/tests-13-sprint.yml/badge.svg)](https://github.com/vmityagin/express-mesto-gha/actions/workflows/tests-13-sprint.yml) [![Tests](https://github.com/vmityagin/express-mesto-gha/actions/workflows/tests-14-sprint.yml/badge.svg)](https://github.com/vmityagin/express-mesto-gha/actions/workflows/tests-14-sprint.yml)
 # Проект Mesto фронтенд + бэкенд
 
